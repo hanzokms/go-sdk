@@ -4,14 +4,14 @@ package test
 // 	"os"
 // 	"testing"
 
-// 	infisical "github.com/infisical/go-sdk"
+// 	kms "github.com/hanzokms/go-sdk"
 // )
 
 // func TestUniversalAuthLogin(t *testing.T) {
 
-// 	client, err := infisical.NewInfisicalClient(infisical.Config{
-// 		Auth: infisical.Authentication{
-// 			UniversalAuth: infisical.UniversalAuth{
+// 	client, err := kms.NewClient(kms.Config{
+// 		Auth: kms.Authentication{
+// 			UniversalAuth: kms.UniversalAuth{
 // 				ClientID:     os.Getenv("GO_SDK_TEST_UNIVERSAL_AUTH_CLIENT_ID"),
 // 				ClientSecret: os.Getenv("GO_SDK_TEST_UNIVERSAL_AUTH_CLIENT_SECRET"),
 // 			},
@@ -19,10 +19,10 @@ package test
 // 	})
 
 // 	if err != nil {
-// 		t.Fatalf("Failed to create Infisical client: %v", err)
+// 		t.Fatalf("Failed to create KMS client: %v", err)
 // 	}
 
-// 	secrets, err := client.Secrets().List(infisical.ListSecretsOptions{
+// 	secrets, err := client.Secrets().List(kms.ListSecretsOptions{
 // 		ProjectID:   os.Getenv("GO_SDK_TEST_PROJECT_ID"),
 // 		Environment: "dev",
 // 	})

@@ -1,4 +1,4 @@
-package infisical
+package kms
 
 import (
 	"context"
@@ -22,8 +22,8 @@ import (
 
 	"github.com/go-resty/resty/v2"
 	"github.com/hashicorp/golang-lru/v2/expirable"
-	"github.com/infisical/go-sdk/packages/models"
-	"github.com/infisical/go-sdk/packages/util"
+	"github.com/hanzokms/go-sdk/packages/models"
+	"github.com/hanzokms/go-sdk/packages/util"
 )
 
 type LogLevel string
@@ -32,7 +32,7 @@ const (
 	LogLevelDebug LogLevel = "debug"
 )
 
-type InfisicalClient struct {
+type Client struct {
 	authMethod       util.AuthMethod
 	credential       interface{}
 	tokenDetails     MachineIdentityCredential
@@ -60,7 +60,7 @@ type InfisicalClient struct {
 	logger zerolog.Logger
 }
 
-type InfisicalClientInterface interface {
+type ClientInterface interface {
 	UpdateConfiguration(config Config)
 	Secrets() SecretsInterface
 	Folders() FoldersInterface
@@ -121,10 +121,10 @@ type RetryRequestsConfig struct {
 }
 
 type Config struct {
-	SiteUrl              string `default:"https://app.infisical.com"`
+	SiteUrl              string `default:"https://kms.hanzo.ai"`
 	CaCertificate        string
 	LogLevel             LogLevel // Specify the log level for the SDK. If set to debug, the SDK will print to stdout with verbose logging. Defaults to no logging.
-	UserAgent            string   `default:"infisical-go-sdk"` // User-Agent header to be used on requests sent by the SDK. Defaults to `infisical-go-sdk`. Do not modify this unless you have a reason to do so.
+	UserAgent            string   `default:"hanzo-kms-go-sdk"` // User-Agent header to be used on requests sent by the SDK. Defaults to `hanzo-kms-go-sdk`. Do not modify this unless you have a reason to do so.
 	AutoTokenRefresh     bool     `default:"true"`             // Whether or not to automatically refresh the auth token after using one of the .Auth() methods. Defaults to `true`.
 	SilentMode           bool     `default:"false"`            // If enabled, the SDK will not print any warnings to the console.
 	CacheExpiryInSeconds int      // Defines how long certain API responses should be cached in memory, in seconds. When set to a positive value, responses from specific fetch API requests (like secret fetching) will be cached for this duration. Set to 0 to disable caching. Defaults to 0.
@@ -181,7 +181,7 @@ func setupLogger(logLevel LogLevel) zerolog.Logger {
 			logger.Warn().Msgf("Invalid log level: %s", logLevel)
 		} else {
 			logger = logger.Level(level)
-			logger.Debug().Msgf("Infisical SDK log level set to %s", logLevel)
+			logger.Debug().Msgf("Hanzo KMS SDK log level set to %s", logLevel)
 		}
 	} else {
 		logger = logger.Level(zerolog.InfoLevel)
@@ -220,7 +220,7 @@ func setDefaults(cfg *Config) {
 	}
 }
 
-func (c *InfisicalClient) setAccessToken(tokenDetails MachineIdentityCredential, credential interface{}, authMethod util.AuthMethod) {
+func (c *Client) setAccessToken(tokenDetails MachineIdentityCredential, credential interface{}, authMethod util.AuthMethod) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -237,7 +237,7 @@ func (c *InfisicalClient) setAccessToken(tokenDetails MachineIdentityCredential,
 	c.httpClient.SetAuthToken(c.tokenDetails.AccessToken)
 }
 
-func (c *InfisicalClient) clearAccessToken() {
+func (c *Client) clearAccessToken() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -246,7 +246,7 @@ func (c *InfisicalClient) clearAccessToken() {
 	c.httpClient.SetAuthScheme("")
 	c.httpClient.SetAuthToken("")
 }
-func (c *InfisicalClient) setPlainAccessToken(accessToken string) {
+func (c *Client) setPlainAccessToken(accessToken string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -258,10 +258,10 @@ func (c *InfisicalClient) setPlainAccessToken(accessToken string) {
 	c.credential = models.AccessTokenCredential{AccessToken: accessToken}
 }
 
-func NewInfisicalClient(context context.Context, config Config) InfisicalClientInterface {
+func NewClient(context context.Context, config Config) ClientInterface {
 	logger := setupLogger(config.LogLevel)
 
-	client := &InfisicalClient{
+	client := &Client{
 		logger: logger,
 	}
 	setDefaults(&config)
@@ -286,7 +286,7 @@ func NewInfisicalClient(context context.Context, config Config) InfisicalClientI
 	return client
 }
 
-func (c *InfisicalClient) UpdateConfiguration(config Config) {
+func (c *Client) UpdateConfiguration(config Config) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -424,31 +424,31 @@ func (c *InfisicalClient) UpdateConfiguration(config Config) {
 	}
 }
 
-func (c *InfisicalClient) Secrets() SecretsInterface {
+func (c *Client) Secrets() SecretsInterface {
 	return c.secrets
 }
 
-func (c *InfisicalClient) Folders() FoldersInterface {
+func (c *Client) Folders() FoldersInterface {
 	return c.folders
 }
 
-func (c *InfisicalClient) Auth() AuthInterface {
+func (c *Client) Auth() AuthInterface {
 	return c.auth
 }
 
-func (c *InfisicalClient) DynamicSecrets() DynamicSecretsInterface {
+func (c *Client) DynamicSecrets() DynamicSecretsInterface {
 	return c.dynamicSecrets
 }
 
-func (c *InfisicalClient) Kms() KmsInterface {
+func (c *Client) Kms() KmsInterface {
 	return c.kms
 }
 
-func (c *InfisicalClient) Ssh() SshInterface {
+func (c *Client) Ssh() SshInterface {
 	return c.ssh
 }
 
-func (c *InfisicalClient) handleTokenLifeCycle(context context.Context) {
+func (c *Client) handleTokenLifeCycle(context context.Context) {
 	var warningPrinted = false
 
 	for {

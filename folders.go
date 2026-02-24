@@ -1,8 +1,8 @@
-package infisical
+package kms
 
 import (
-	api "github.com/infisical/go-sdk/packages/api/folders"
-	"github.com/infisical/go-sdk/packages/models"
+	api "github.com/hanzokms/go-sdk/packages/api/folders"
+	"github.com/hanzokms/go-sdk/packages/models"
 )
 
 type ListFoldersOptions = api.ListFoldersV1Request
@@ -18,7 +18,7 @@ type FoldersInterface interface {
 }
 
 type Folders struct {
-	client *InfisicalClient
+	client *Client
 }
 
 func (f *Folders) List(options ListFoldersOptions) ([]models.Folder, error) {
@@ -61,6 +61,6 @@ func (f *Folders) Delete(options DeleteFolderOptions) (models.Folder, error) {
 	return res.Folder, nil
 }
 
-func NewFolders(client *InfisicalClient) FoldersInterface {
+func NewFolders(client *Client) FoldersInterface {
 	return &Folders{client: client}
 }

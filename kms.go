@@ -1,9 +1,9 @@
-package infisical
+package kms
 
 import (
 	"encoding/base64"
 
-	api "github.com/infisical/go-sdk/packages/api/kms"
+	api "github.com/hanzokms/go-sdk/packages/api/kms"
 )
 
 // Options
@@ -51,17 +51,17 @@ type KmsInterface interface {
 }
 
 type Kms struct {
-	client  *InfisicalClient
+	client  *Client
 	keys    *KmsKeys
 	signing *KmsSigning
 }
 
 type KmsKeys struct {
-	client *InfisicalClient
+	client *Client
 }
 
 type KmsSigning struct {
-	client *InfisicalClient
+	client *Client
 }
 
 func (k *KmsKeys) Create(options KmsCreateKeyOptions) (KmsCreateKeyResult, error) {
@@ -168,7 +168,7 @@ func (f *Kms) Signing() KmsSigningInterface {
 	return &KmsSigning{client: f.client}
 }
 
-func NewKms(client *InfisicalClient) KmsInterface {
+func NewKms(client *Client) KmsInterface {
 	return &Kms{
 		client:  client,
 		keys:    &KmsKeys{client: client},

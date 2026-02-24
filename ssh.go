@@ -1,7 +1,7 @@
-package infisical
+package kms
 
 import (
-	api "github.com/infisical/go-sdk/packages/api/ssh"
+	api "github.com/hanzokms/go-sdk/packages/api/ssh"
 )
 
 type SignSshPublicKeyOptions = api.SignSshPublicKeyV1Request
@@ -23,7 +23,7 @@ type SshInterface interface {
 }
 
 type Ssh struct {
-	client *InfisicalClient
+	client *Client
 }
 
 func (f *Ssh) SignKey(options SignSshPublicKeyOptions) (api.SignSshPublicKeyV1Response, error) {
@@ -100,6 +100,6 @@ func (f *Ssh) AddSshHost(options AddSshHostOptions) (api.AddSshHostV1Response, e
 	return res, nil
 }
 
-func NewSsh(client *InfisicalClient) SshInterface {
+func NewSsh(client *Client) SshInterface {
 	return &Ssh{client: client}
 }

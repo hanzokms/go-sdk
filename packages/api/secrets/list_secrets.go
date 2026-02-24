@@ -6,8 +6,8 @@ import (
 
 	"github.com/go-resty/resty/v2"
 	"github.com/hashicorp/golang-lru/v2/expirable"
-	"github.com/infisical/go-sdk/packages/errors"
-	"github.com/infisical/go-sdk/packages/util"
+	"github.com/hanzokms/go-sdk/packages/errors"
+	"github.com/hanzokms/go-sdk/packages/util"
 )
 
 const callListSecretsV3RawOperation = "CallListSecretsV3Raw"

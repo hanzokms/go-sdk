@@ -1,40 +1,126 @@
-<h1 align="center">
-  <img width="300" src="/img/logoname-white.svg#gh-dark-mode-only" alt="infisical">
-</h1>
-<p align="center">
-  <p align="center"><b>Infisical Go SDK</b></p>
-<h4 align="center">
-|
-  <a href="https://infisical.com/docs/sdks/languages/go">Documentation</a> |
-  <a href="https://www.infisical.com">Website</a> |
-  <a href="https://infisical.com/slack">Slack</a> |
-</h4>
+# Hanzo KMS Go SDK
 
-<h4 align="center">
-  <a href="https://github.com/Infisical/go-sdk/blob/main/LICENSE">
-    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Infisical SDKs are released under the MIT license." />
-  </a>
-  <a href="https://infisical.com/slack">
-    <img src="https://img.shields.io/badge/chat-on%20Slack-blueviolet" alt="Slack community channel" />
-  </a>
-  <a href="https://twitter.com/infisical">
-    <img src="https://img.shields.io/twitter/follow/infisical?label=Follow" alt="Infisical Twitter" />
-  </a>
-</h4>
+Official Go SDK for [Hanzo KMS](https://kms.hanzo.ai) -- secret management, encryption, SSH certificates, and dynamic secrets.
 
-## Introduction
+## Installation
 
-**[Infisical](https://infisical.com)** is the open source secret management platform that teams use to centralize their secrets like API keys, database credentials, and configurations.
+```bash
+go get github.com/hanzokms/go-sdk
+```
 
-If you’re working with Go, the official Infisical Go SDK package is the easiest way to fetch and work with secrets for your application. You can read the documentation [here](https://infisical.com/docs/sdks/languages/go).
+## Quick Start
 
-## Documentation
-You can find the documentation for the Go SDK on our [SDK documentation page](https://infisical.com/docs/sdks/languages/go).
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+
+	kms "github.com/hanzokms/go-sdk"
+)
+
+func main() {
+	client := kms.NewClient(context.Background(), kms.Config{
+		SiteUrl:          "https://kms.hanzo.ai",
+		AutoTokenRefresh: true,
+	})
+
+	// Authenticate with Universal Auth
+	_, err := client.Auth().UniversalAuthLogin(
+		os.Getenv("KMS_UNIVERSAL_AUTH_CLIENT_ID"),
+		os.Getenv("KMS_UNIVERSAL_AUTH_CLIENT_SECRET"),
+	)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "auth failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	// List secrets
+	secrets, err := client.Secrets().List(kms.ListSecretsOptions{
+		ProjectID:   os.Getenv("KMS_PROJECT_ID"),
+		Environment: "prod",
+		SecretPath:  "/",
+	})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "list secrets failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	for _, s := range secrets {
+		fmt.Printf("%s = %s\n", s.SecretKey, s.SecretValue)
+	}
+}
+```
+
+## Authentication Methods
+
+| Method | Function |
+|--------|----------|
+| Universal Auth | `client.Auth().UniversalAuthLogin(clientID, clientSecret)` |
+| Access Token | `client.Auth().SetAccessToken(token)` |
+| Kubernetes | `client.Auth().KubernetesAuthLogin(identityID, tokenPath)` |
+| AWS IAM | `client.Auth().AwsIamAuthLogin(identityID)` |
+| Azure | `client.Auth().AzureAuthLogin(identityID, resource)` |
+| GCP ID Token | `client.Auth().GcpIdTokenAuthLogin(identityID)` |
+| GCP IAM | `client.Auth().GcpIamAuthLogin(identityID, keyPath)` |
+| OIDC | `client.Auth().OidcAuthLogin(identityID, jwt)` |
+| JWT | `client.Auth().JwtAuthLogin(identityID, jwt)` |
+| LDAP | `client.Auth().LdapAuthLogin(identityID, user, pass)` |
+| OCI | `client.Auth().OciAuthLogin(options)` |
+
+## Features
+
+- **Secrets** -- CRUD operations, batch create, import support
+- **Folders** -- organize secrets into folder hierarchies
+- **Dynamic Secrets** -- lease-based credentials with auto-rotation
+- **KMS Encryption** -- encrypt/decrypt data, key management, signing/verification
+- **SSH Certificates** -- issue and sign SSH certificates, host management
+- **Auto Token Refresh** -- background goroutine handles token renewal
+- **Caching** -- optional LRU cache for API responses
+- **Retry with Backoff** -- configurable exponential backoff on failures
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `KMS_UNIVERSAL_AUTH_CLIENT_ID` | Universal Auth client ID |
+| `KMS_UNIVERSAL_AUTH_CLIENT_SECRET` | Universal Auth client secret |
+| `KMS_ACCESS_TOKEN` | Direct access token |
+| `KMS_AUTH_ORGANIZATION_SLUG` | Scoped organization slug |
+| `KMS_KUBERNETES_IDENTITY_ID` | Kubernetes identity ID |
+| `KMS_AWS_IAM_AUTH_IDENTITY_ID` | AWS IAM identity ID |
+| `KMS_AZURE_AUTH_IDENTITY_ID` | Azure identity ID |
+| `KMS_GCP_AUTH_IDENTITY_ID` | GCP identity ID |
+| `KMS_OIDC_AUTH_IDENTITY_ID` | OIDC identity ID |
+| `KMS_LDAP_AUTH_IDENTITY_ID` | LDAP identity ID |
+| `KMS_OCI_AUTH_IDENTITY_ID` | OCI identity ID |
+
+## Configuration
+
+```go
+client := kms.NewClient(context.Background(), kms.Config{
+	SiteUrl:              "https://kms.hanzo.ai", // default
+	AutoTokenRefresh:     true,                   // default
+	CacheExpiryInSeconds: 300,                    // 5-minute cache
+	LogLevel:             kms.LogLevelDebug,       // verbose logging
+	SilentMode:           false,                  // show warnings
+	CaCertificate:        pemString,              // custom CA
+	RetryRequestsConfig: &kms.RetryRequestsConfig{
+		ExponentialBackoff: &kms.ExponentialBackoffStrategy{
+			BaseDelay:  1 * time.Second,
+			MaxRetries: 5,
+			MaxDelay:   30 * time.Second,
+		},
+	},
+})
+```
 
 ## Security
 
-Please do not file GitHub issues or post on our public forum for security vulnerabilities, as they are public!
+Report vulnerabilities to **security@hanzo.ai**. Do not file public issues for security concerns.
 
-Infisical takes security issues very seriously. If you have any concerns about Infisical or believe you have uncovered a vulnerability, please get in touch via the e-mail address security@infisical.com. In the message, try to provide a description of the issue and ideally a way of reproducing it. The security team will get back to you as soon as possible.
+## License
 
-Note that this security address should be used only for undisclosed vulnerabilities. Please report any security problems to us before disclosing it publicly.
+MIT -- see [LICENSE](LICENSE).

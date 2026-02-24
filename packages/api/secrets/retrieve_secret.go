@@ -7,8 +7,8 @@ import (
 
 	"github.com/go-resty/resty/v2"
 	"github.com/hashicorp/golang-lru/v2/expirable"
-	sdkErrors "github.com/infisical/go-sdk/packages/errors"
-	"github.com/infisical/go-sdk/packages/util"
+	sdkErrors "github.com/hanzokms/go-sdk/packages/errors"
+	"github.com/hanzokms/go-sdk/packages/util"
 )
 
 const callRetrieveSecretV3RawOperation = "CallRetrieveSecretV3Raw"

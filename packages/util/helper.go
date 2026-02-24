@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/go-resty/resty/v2"
-	"github.com/infisical/go-sdk/packages/models"
+	"github.com/hanzokms/go-sdk/packages/models"
 	"github.com/rs/zerolog"
 )
 
@@ -29,7 +29,7 @@ func AppendAPIEndpoint(siteUrl string) string {
 }
 
 func PrintWarning(logger zerolog.Logger, message string) {
-	logger.Warn().Msgf("[Infisical] Warning: %v", message)
+	logger.Warn().Msgf("[KMS] Warning: %v", message)
 }
 
 func EnsureUniqueSecretsByKey(secrets *[]models.Secret, skipUniqueKey bool) {

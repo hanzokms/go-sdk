@@ -7,11 +7,11 @@ package test
 // 	"os"
 // 	"testing"
 
-// 	infisical "github.com/infisical/go-sdk"
+// 	kms "github.com/hanzokms/go-sdk"
 // )
 
 // func TestSshIssueCreds(t *testing.T) {
-// 	client := infisical.NewInfisicalClient(context.Background(), infisical.Config{
+// 	client := kms.NewClient(context.Background(), kms.Config{
 // 		SiteUrl:          "http://localhost:8080",
 // 		AutoTokenRefresh: true,
 // 	})
@@ -24,7 +24,7 @@ package test
 // 	}
 
 // 	// Test adding SSH host
-// 	_, err = client.Ssh().AddSshHost(infisical.AddSshHostOptions{
+// 	_, err = client.Ssh().AddSshHost(kms.AddSshHostOptions{
 // 		ProjectID: "",
 // 		Hostname:  "",
 // 		Alias:     "",
@@ -35,7 +35,7 @@ package test
 // 	}
 
 // 	// Test getting SSH hosts the user has access to
-// 	hosts, err := client.Ssh().GetSshHosts(infisical.GetSshHostsOptions{})
+// 	hosts, err := client.Ssh().GetSshHosts(kms.GetSshHostsOptions{})
 // 	if err != nil {
 // 		t.Fatalf("Failed to fetch SSH hosts: %v", err)
 // 	}
@@ -75,7 +75,7 @@ package test
 // 	targetHost := hosts[0]
 
 // 	// Test issuing SSH cert for user
-// 	creds, err := client.Ssh().IssueSshHostUserCert(targetHost.ID, infisical.IssueSshHostUserCertOptions{
+// 	creds, err := client.Ssh().IssueSshHostUserCert(targetHost.ID, kms.IssueSshHostUserCertOptions{
 // 		LoginUser: "ec2-user", // or whatever login user is appropriate
 // 	})
 // 	if err != nil {
@@ -91,7 +91,7 @@ package test
 // 	fmt.Println(string(credsJson))
 
 // 	// Test issuing SSH cert for host
-// 	creds2, err := client.Ssh().IssueSshHostHostCert(targetHost.ID, infisical.IssueSshHostHostCertOptions{
+// 	creds2, err := client.Ssh().IssueSshHostHostCert(targetHost.ID, kms.IssueSshHostHostCertOptions{
 // 		PublicKey: "",
 // 	})
 // 	if err != nil {
@@ -107,7 +107,7 @@ package test
 // 	fmt.Println(string(creds2Json))
 
 // 	// Test issuing SSH credentials
-// 	creds, err := client.Ssh().IssueCredentials(infisical.IssueSshCredsOptions{
+// 	creds, err := client.Ssh().IssueCredentials(kms.IssueSshCredsOptions{
 // 		CertificateTemplateID: "",
 // 		Principals:            []string{"ec2-user"},
 // 	})
@@ -117,7 +117,7 @@ package test
 // 	}
 
 // 	// Test signing SSH public key
-// 	creds2, err := client.Ssh().SignKey(infisical.SignSshPublicKeyOptions{
+// 	creds2, err := client.Ssh().SignKey(kms.SignSshPublicKeyOptions{
 // 		CertificateTemplateID: "",
 // 		Principals:            []string{"ec2-user"},
 // 		PublicKey:             "ssh-rsa ...",

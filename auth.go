@@ -1,4 +1,4 @@
-package infisical
+package kms
 
 import (
 	"context"
@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	api "github.com/infisical/go-sdk/packages/api/auth"
-	"github.com/infisical/go-sdk/packages/models"
-	"github.com/infisical/go-sdk/packages/util"
+	api "github.com/hanzokms/go-sdk/packages/api/auth"
+	"github.com/hanzokms/go-sdk/packages/models"
+	"github.com/hanzokms/go-sdk/packages/util"
 	"github.com/oracle/oci-go-sdk/v65/common"
 
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
@@ -46,7 +46,7 @@ type AuthInterface interface {
 }
 
 type Auth struct {
-	client           *InfisicalClient
+	client           *Client
 	organizationSlug string
 }
 
@@ -93,14 +93,14 @@ func (a *Auth) RevokeAccessToken() error {
 func (a *Auth) UniversalAuthLogin(clientID string, clientSecret string) (credential MachineIdentityCredential, err error) {
 
 	if clientID == "" {
-		clientID = os.Getenv(util.INFISICAL_UNIVERSAL_AUTH_CLIENT_ID_ENV_NAME)
+		clientID = os.Getenv(util.KMS_UNIVERSAL_AUTH_CLIENT_ID_ENV_NAME)
 	}
 	if clientSecret == "" {
-		clientSecret = os.Getenv(util.INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET_ENV_NAME)
+		clientSecret = os.Getenv(util.KMS_UNIVERSAL_AUTH_CLIENT_SECRET_ENV_NAME)
 	}
 	organizationSlug := a.organizationSlug
 	if organizationSlug == "" {
-		organizationSlug = os.Getenv(util.INFISICAL_AUTH_ORGANIZATION_SLUG_ENV_NAME)
+		organizationSlug = os.Getenv(util.KMS_AUTH_ORGANIZATION_SLUG_ENV_NAME)
 	}
 
 	credential, err = api.CallUniversalAuthLogin(a.client.httpClient, api.UniversalAuthLoginRequest{
@@ -128,11 +128,11 @@ func (a *Auth) KubernetesAuthLogin(identityID string, serviceAccountTokenPath st
 		serviceAccountTokenPath = os.Getenv(util.DEFAULT_KUBERNETES_SERVICE_ACCOUNT_TOKEN_PATH)
 	}
 	if identityID == "" {
-		identityID = os.Getenv(util.INFISICAL_KUBERNETES_IDENTITY_ID_ENV_NAME)
+		identityID = os.Getenv(util.KMS_KUBERNETES_IDENTITY_ID_ENV_NAME)
 	}
 	organizationSlug := a.organizationSlug
 	if organizationSlug == "" {
-		organizationSlug = os.Getenv(util.INFISICAL_AUTH_ORGANIZATION_SLUG_ENV_NAME)
+		organizationSlug = os.Getenv(util.KMS_AUTH_ORGANIZATION_SLUG_ENV_NAME)
 	}
 
 	serviceAccountToken, serviceAccountTokenErr := util.GetKubernetesServiceAccountToken(serviceAccountTokenPath)
@@ -164,11 +164,11 @@ func (a *Auth) KubernetesAuthLogin(identityID string, serviceAccountTokenPath st
 func (a *Auth) KubernetesRawServiceAccountTokenLogin(identityID string, serviceAccountToken string) (credential MachineIdentityCredential, err error) {
 
 	if identityID == "" {
-		identityID = os.Getenv(util.INFISICAL_KUBERNETES_IDENTITY_ID_ENV_NAME)
+		identityID = os.Getenv(util.KMS_KUBERNETES_IDENTITY_ID_ENV_NAME)
 	}
 	organizationSlug := a.organizationSlug
 	if organizationSlug == "" {
-		organizationSlug = os.Getenv(util.INFISICAL_AUTH_ORGANIZATION_SLUG_ENV_NAME)
+		organizationSlug = os.Getenv(util.KMS_AUTH_ORGANIZATION_SLUG_ENV_NAME)
 	}
 
 	credential, err = api.CallKubernetesAuthLogin(a.client.httpClient, api.KubernetesAuthLoginRequest{
@@ -191,11 +191,11 @@ func (a *Auth) KubernetesRawServiceAccountTokenLogin(identityID string, serviceA
 
 func (a *Auth) AzureAuthLogin(identityID string, resource string) (credential MachineIdentityCredential, err error) {
 	if identityID == "" {
-		identityID = os.Getenv(util.INFISICAL_AZURE_AUTH_IDENTITY_ID_ENV_NAME)
+		identityID = os.Getenv(util.KMS_AZURE_AUTH_IDENTITY_ID_ENV_NAME)
 	}
 	organizationSlug := a.organizationSlug
 	if organizationSlug == "" {
-		organizationSlug = os.Getenv(util.INFISICAL_AUTH_ORGANIZATION_SLUG_ENV_NAME)
+		organizationSlug = os.Getenv(util.KMS_AUTH_ORGANIZATION_SLUG_ENV_NAME)
 	}
 
 	jwt, jwtError := util.GetAzureMetadataToken(a.client.httpClient, resource)
@@ -224,11 +224,11 @@ func (a *Auth) AzureAuthLogin(identityID string, resource string) (credential Ma
 
 func (a *Auth) GcpIdTokenAuthLogin(identityID string) (credential MachineIdentityCredential, err error) {
 	if identityID == "" {
-		identityID = os.Getenv(util.INFISICAL_GCP_AUTH_IDENTITY_ID_ENV_NAME)
+		identityID = os.Getenv(util.KMS_GCP_AUTH_IDENTITY_ID_ENV_NAME)
 	}
 	organizationSlug := a.organizationSlug
 	if organizationSlug == "" {
-		organizationSlug = os.Getenv(util.INFISICAL_AUTH_ORGANIZATION_SLUG_ENV_NAME)
+		organizationSlug = os.Getenv(util.KMS_AUTH_ORGANIZATION_SLUG_ENV_NAME)
 	}
 
 	jwt, jwtError := util.GetGCPMetadataToken(a.client.httpClient, identityID)
@@ -257,14 +257,14 @@ func (a *Auth) GcpIdTokenAuthLogin(identityID string) (credential MachineIdentit
 
 func (a *Auth) GcpIamAuthLogin(identityID string, serviceAccountKeyFilePath string) (credential MachineIdentityCredential, err error) {
 	if identityID == "" {
-		identityID = os.Getenv(util.INFISICAL_GCP_AUTH_IDENTITY_ID_ENV_NAME)
+		identityID = os.Getenv(util.KMS_GCP_AUTH_IDENTITY_ID_ENV_NAME)
 	}
 	if serviceAccountKeyFilePath == "" {
-		serviceAccountKeyFilePath = os.Getenv(util.INFISICAL_GCP_IAM_SERVICE_ACCOUNT_KEY_FILE_PATH_ENV_NAME)
+		serviceAccountKeyFilePath = os.Getenv(util.KMS_GCP_IAM_SERVICE_ACCOUNT_KEY_FILE_PATH_ENV_NAME)
 	}
 	organizationSlug := a.organizationSlug
 	if organizationSlug == "" {
-		organizationSlug = os.Getenv(util.INFISICAL_AUTH_ORGANIZATION_SLUG_ENV_NAME)
+		organizationSlug = os.Getenv(util.KMS_AUTH_ORGANIZATION_SLUG_ENV_NAME)
 	}
 
 	jwt, jwtError := util.GetGCPIamServiceAccountToken(identityID, serviceAccountKeyFilePath)
@@ -294,11 +294,11 @@ func (a *Auth) GcpIamAuthLogin(identityID string, serviceAccountKeyFilePath stri
 func (a *Auth) AwsIamAuthLogin(identityId string) (credential MachineIdentityCredential, err error) {
 
 	if identityId == "" {
-		identityId = os.Getenv(util.INFISICAL_AWS_IAM_AUTH_IDENTITY_ID_ENV_NAME)
+		identityId = os.Getenv(util.KMS_AWS_IAM_AUTH_IDENTITY_ID_ENV_NAME)
 	}
 	organizationSlug := a.organizationSlug
 	if organizationSlug == "" {
-		organizationSlug = os.Getenv(util.INFISICAL_AUTH_ORGANIZATION_SLUG_ENV_NAME)
+		organizationSlug = os.Getenv(util.KMS_AUTH_ORGANIZATION_SLUG_ENV_NAME)
 	}
 
 	awsCredentials, awsRegion, err := util.RetrieveAwsCredentials()
@@ -370,11 +370,11 @@ func (a *Auth) AwsIamAuthLogin(identityId string) (credential MachineIdentityCre
 
 func (a *Auth) OidcAuthLogin(identityId string, jwt string) (credential MachineIdentityCredential, err error) {
 	if identityId == "" {
-		identityId = os.Getenv(util.INFISICAL_OIDC_AUTH_IDENTITY_ID_ENV_NAME)
+		identityId = os.Getenv(util.KMS_OIDC_AUTH_IDENTITY_ID_ENV_NAME)
 	}
 	organizationSlug := a.organizationSlug
 	if organizationSlug == "" {
-		organizationSlug = os.Getenv(util.INFISICAL_AUTH_ORGANIZATION_SLUG_ENV_NAME)
+		organizationSlug = os.Getenv(util.KMS_AUTH_ORGANIZATION_SLUG_ENV_NAME)
 	}
 
 	credential, err = api.CallOidcAuthLogin(a.client.httpClient, api.OidcAuthLoginRequest{
@@ -399,7 +399,7 @@ func (a *Auth) OidcAuthLogin(identityId string, jwt string) (credential MachineI
 func (a *Auth) JwtAuthLogin(identityID string, jwt string) (credential MachineIdentityCredential, err error) {
 	organizationSlug := a.organizationSlug
 	if organizationSlug == "" {
-		organizationSlug = os.Getenv(util.INFISICAL_AUTH_ORGANIZATION_SLUG_ENV_NAME)
+		organizationSlug = os.Getenv(util.KMS_AUTH_ORGANIZATION_SLUG_ENV_NAME)
 	}
 
 	credential, err = api.CallJwtAuthLogin(a.client.httpClient, api.JwtAuthLoginRequest{
@@ -423,11 +423,11 @@ func (a *Auth) JwtAuthLogin(identityID string, jwt string) (credential MachineId
 func (a *Auth) OciAuthLogin(options OciAuthLoginOptions) (credential MachineIdentityCredential, err error) {
 
 	if options.IdentityID == "" {
-		options.IdentityID = os.Getenv(util.INFISICAL_OCI_AUTH_IDENTITY_ID_ENV_NAME)
+		options.IdentityID = os.Getenv(util.KMS_OCI_AUTH_IDENTITY_ID_ENV_NAME)
 	}
 	organizationSlug := a.organizationSlug
 	if organizationSlug == "" {
-		organizationSlug = os.Getenv(util.INFISICAL_AUTH_ORGANIZATION_SLUG_ENV_NAME)
+		organizationSlug = os.Getenv(util.KMS_AUTH_ORGANIZATION_SLUG_ENV_NAME)
 	}
 
 	provider := common.NewRawConfigurationProvider(
@@ -493,11 +493,11 @@ func (a *Auth) OciAuthLogin(options OciAuthLoginOptions) (credential MachineIden
 
 func (a *Auth) LdapAuthLogin(identityID string, username string, password string) (credential MachineIdentityCredential, err error) {
 	if identityID == "" {
-		identityID = os.Getenv(util.INFISICAL_LDAP_AUTH_IDENTITY_ID_ENV_NAME)
+		identityID = os.Getenv(util.KMS_LDAP_AUTH_IDENTITY_ID_ENV_NAME)
 	}
 	organizationSlug := a.organizationSlug
 	if organizationSlug == "" {
-		organizationSlug = os.Getenv(util.INFISICAL_AUTH_ORGANIZATION_SLUG_ENV_NAME)
+		organizationSlug = os.Getenv(util.KMS_AUTH_ORGANIZATION_SLUG_ENV_NAME)
 	}
 
 	credential, err = api.CallLdapAuthLogin(a.client.httpClient, api.LdapAuthLoginRequest{
@@ -520,6 +520,6 @@ func (a *Auth) LdapAuthLogin(identityID string, username string, password string
 	return credential, nil
 }
 
-func NewAuth(client *InfisicalClient) AuthInterface {
+func NewAuth(client *Client) AuthInterface {
 	return &Auth{client: client}
 }

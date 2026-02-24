@@ -1,4 +1,4 @@
-package infisical
+package kms
 
 import (
 	"fmt"
@@ -7,15 +7,15 @@ import (
 	"time"
 
 	"github.com/go-resty/resty/v2"
-	api "github.com/infisical/go-sdk/packages/api/auth"
-	"github.com/infisical/go-sdk/packages/models"
-	"github.com/infisical/go-sdk/packages/util"
+	api "github.com/hanzokms/go-sdk/packages/api/auth"
+	"github.com/hanzokms/go-sdk/packages/models"
+	"github.com/hanzokms/go-sdk/packages/util"
 )
 
 const renewalBufferSeconds = 5
 
 // isTokenExpiringSoon checks if the token will expire within the given buffer time.
-func (c *InfisicalClient) isTokenExpiringSoon(bufferSeconds int64) bool {
+func (c *Client) isTokenExpiringSoon(bufferSeconds int64) bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
@@ -34,7 +34,7 @@ func (c *InfisicalClient) isTokenExpiringSoon(bufferSeconds int64) bool {
 }
 
 // refreshTokenSynchronously performs a blocking token refresh. This gets called by the onbeforerequest hook and the token lifecycle goroutine.
-func (c *InfisicalClient) refreshTokenSynchronously(manualTrigger bool) error {
+func (c *Client) refreshTokenSynchronously(manualTrigger bool) error {
 	c.logger.Debug().Msgf("Refreshing token synchronously. Manual trigger: %v", manualTrigger)
 
 	// Use TryLock to prevent deadlocks when the refresh operation itself triggers HTTP requests (renewal or re-auth)
@@ -107,7 +107,7 @@ func (c *InfisicalClient) refreshTokenSynchronously(manualTrigger bool) error {
 }
 
 // doTokenRenewal attempts to renew the access token.
-func (c *InfisicalClient) doTokenRenewal(accessToken string, credential interface{}, authMethod util.AuthMethod) error {
+func (c *Client) doTokenRenewal(accessToken string, credential interface{}, authMethod util.AuthMethod) error {
 	renewedCredential, err := api.CallRenewAccessToken(c.httpClient, api.RenewAccessTokenRequest{AccessToken: accessToken})
 	if err != nil {
 		return err
@@ -117,7 +117,7 @@ func (c *InfisicalClient) doTokenRenewal(accessToken string, credential interfac
 }
 
 // doReAuthentication performs a full re-authentication using the stored credentials.
-func (c *InfisicalClient) doReAuthentication(authMethod util.AuthMethod, credential interface{}, config Config) error {
+func (c *Client) doReAuthentication(authMethod util.AuthMethod, credential interface{}, config Config) error {
 	authStrategies := c.getAuthStrategies()
 
 	strategy, exists := authStrategies[authMethod]
@@ -142,7 +142,7 @@ func (c *InfisicalClient) doReAuthentication(authMethod util.AuthMethod, credent
 }
 
 // calculateSleepTime determines how long to sleep before the next token refresh check
-func (c *InfisicalClient) calculateSleepTime(tokenDetails MachineIdentityCredential, bufferSeconds int64) time.Duration {
+func (c *Client) calculateSleepTime(tokenDetails MachineIdentityCredential, bufferSeconds int64) time.Duration {
 	if tokenDetails.ExpiresIn == 0 {
 		return 1 * time.Second
 	}
@@ -161,7 +161,7 @@ func (c *InfisicalClient) calculateSleepTime(tokenDetails MachineIdentityCredent
 }
 
 // getAuthStrategies returns the map of authentication strategies
-func (c *InfisicalClient) getAuthStrategies() map[util.AuthMethod]func(cred interface{}) (credential MachineIdentityCredential, err error) {
+func (c *Client) getAuthStrategies() map[util.AuthMethod]func(cred interface{}) (credential MachineIdentityCredential, err error) {
 	return map[util.AuthMethod]func(cred interface{}) (credential MachineIdentityCredential, err error){
 		util.UNIVERSAL_AUTH: func(cred interface{}) (credential MachineIdentityCredential, err error) {
 			if parsedCreds, ok := cred.(models.UniversalAuthCredential); ok {
@@ -228,7 +228,7 @@ func (c *InfisicalClient) getAuthStrategies() map[util.AuthMethod]func(cred inte
 	}
 }
 
-func (c *InfisicalClient) beforeRequestAuthInterceptor(client *resty.Client, req *resty.Request) error {
+func (c *Client) beforeRequestAuthInterceptor(client *resty.Client, req *resty.Request) error {
 	// skip auth endpoints to prevent infinite loops.
 	// note(daniel): req.URL contains just the path ("/v1/auth/..."), not the full URL with base.
 	// the base URL has /api appended, but that's not part of req.URL at this point.

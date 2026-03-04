@@ -1,6 +1,6 @@
 module github.com/hanzokms/go-sdk
 
-go 1.21
+go 1.26
 
 require (
 	cloud.google.com/go/iam v1.1.11
